@@ -7,14 +7,15 @@ const loginPage = (req, res) => {
 
   // check if username & password are not empty
   if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username and password are required" });
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "Username and password are required" }));
+    return;
   }
   const token = jwt.sign({ username }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
-  res.status(200).json({ msg: "Login successful", token });
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ msg: "Login successful", token }));
 };
 
 const dashboardPage = (req, res) => {
@@ -22,18 +23,20 @@ const dashboardPage = (req, res) => {
 
   // authentication: Bearer <token>
   if (!authenticator || !authenticator.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ msg: "Unauthorized: No token provided" }));
+    return;
   }
 
   const token = authenticator.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    res
-      .status(200)
-      .json({ msg: `Welcome to the dashboard, ${decoded.username}` });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ msg: `Welcome to the dashboard, ${decoded.username}` }));
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ msg: "Unauthorized: Invalid token" }));
   }
 };
 
