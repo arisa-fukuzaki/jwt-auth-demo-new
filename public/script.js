@@ -8,8 +8,15 @@ form.addEventListener("submit", async (e) => {
   const formObj = Object.fromEntries(formData);
 
   try {
-    const res = await axios.post("http://localhost:3000/login", formObj);
-    localStorage.setItem("token", res.data.token);
+    const res = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formObj),
+    });
+    const data = await res.json();
+    localStorage.setItem("token", data.token);
     console.log("user signed up");
   } catch (err) {
     localStorage.removeItem("token");
@@ -20,13 +27,17 @@ getData.addEventListener("click", async (e) => {
   const token = localStorage.getItem("token");
 
   try {
-    const res = await axios.get("http://localhost:3000/dashboard", {
+    const res = await fetch("http://localhost:3000/dashboard", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    data.innerHTML = `<h1>Hello ${res.data.msg}</h1>`;
+    const responseData = await res.json();
+    if (!res.ok) {
+      throw new Error(responseData.msg);
+    }
+    data.innerHTML = `<h1>Hello ${responseData.msg}</h1>`;
   } catch (err) {
-    data.innerHTML = `<h1>${err.response.data.msg}</h1>`;
+    data.innerHTML = `<h1>${err.message}</h1>`;
   }
 });
